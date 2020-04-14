@@ -13,8 +13,14 @@ import Container from '@material-ui/core/Container'
 import { Creators as AuthActions } from '../../store/ducks/auth'
 
 function Copyright() {
+  const history = useHistory()
   return (
-    <Typography variant='body2' color='textPrimary' align='center'>
+    <Typography
+      onClick={() => history.push('/cadastrar')}
+      variant='body2'
+      color='textPrimary'
+      align='center'
+    >
       {'Copyright © '}
       Ponto Certo
     </Typography>
