@@ -109,7 +109,7 @@ function Month({ month, actualMonth }) {
 
     await getCoordsFromAddress()
 
-    if (distance <= 999999) {
+    if (distance <= 150) {
       // Pegando última marcação
       let lastMark
       lastMark =
