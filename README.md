@@ -2,6 +2,7 @@
 
 ## Tecnologias/Frameworks utilizadas
 - React
+- Google Maps Geolocation
 - Firebase
 - Sheetson
 - Material UI
