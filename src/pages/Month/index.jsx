@@ -44,9 +44,10 @@ function Month({ month, actualMonth }) {
   )
 
   //Getting redux states
-  const { isLogged } = useSelector(
+  const { isLogged, isLoading } = useSelector(
     (state) => ({
       isLogged: state.auth.isLogged,
+      isLoading: state.auth.isLoading,
     }),
     shallowEqual
   )
@@ -56,6 +57,10 @@ function Month({ month, actualMonth }) {
       history.push('/')
     }
   }, [isLogged, history])
+
+  if (isLoading) {
+    return <h1>Carregando...</h1>
+  }
 
   const hasMarks = marks
     .filter((mark) => new Date(mark.markTime).getMonth() + 1 === actualMonth)
@@ -104,7 +109,7 @@ function Month({ month, actualMonth }) {
 
     await getCoordsFromAddress()
 
-    if (distance <= 150) {
+    if (distance <= 999999) {
       // Pegando última marcação
       let lastMark
       lastMark =

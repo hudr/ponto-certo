@@ -1,5 +1,7 @@
 import * as AxiosMark from '../../service/Axios'
 
+import { Creators as AuthActions } from '../ducks/auth'
+
 export const Types = {
   MARKS: 'mark/MARKS',
 }
@@ -37,15 +39,19 @@ export const Creators = {
 
   submitUserMark: (markData) => {
     return async (dispatch) => {
+      dispatch(AuthActions.handleLoader(true))
       await AxiosMark.insertMark(markData)
       await dispatch(Creators.getMarks())
+      dispatch(AuthActions.handleLoader(false))
     }
   },
 
   removeUserMark: (rowIndex) => {
     return async (dispatch) => {
+      dispatch(AuthActions.handleLoader(true))
       await AxiosMark.removeMask(rowIndex)
       await dispatch(Creators.getMarks())
+      dispatch(AuthActions.handleLoader(false))
     }
   },
 }

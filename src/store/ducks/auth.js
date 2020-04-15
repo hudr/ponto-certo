@@ -36,7 +36,7 @@ export default function reducer(state = INITIAL_STATE, action) {
       return {
         ...state,
         authUser: action.payload,
-        isLogged: true,
+        isLogged: action.payload.isLogged,
         errorMessage: '',
       }
     case Types.LOGOUT:
@@ -93,6 +93,7 @@ export const Creators = {
                 nome,
                 enderecoprofissional: endereco,
                 email,
+                isLogged: false,
               },
             })
 
@@ -189,139 +190,6 @@ export const Creators = {
     }
   },
 
-  handleForgotPassword: (email) => {
-    return async (dispatch) => {
-      if (!email) {
-        dispatch({
-          type: Types.ERROR,
-          payload: 'Please, fill in all required fields.',
-        })
-      } else {
-        await firebase
-          .auth()
-          .sendPasswordResetEmail(email)
-          .catch((error) => {
-            if (error.code === 'auth/invalid-email')
-              dispatch({
-                type: Types.ERROR,
-                payload: 'Invalid email address format.',
-              })
-
-            if (error.code === 'auth/user-not-found')
-              dispatch({
-                type: Types.ERROR,
-                payload: "This account doesn't exist.",
-              })
-          })
-      }
-    }
-  },
-
-  handleUpdateProfile: (
-    userName,
-    monthAmount,
-    userCity,
-    userGenre,
-    userEmail,
-    userImageBase64
-  ) => {
-    return async (dispatch) => {
-      const db = firebase.firestore()
-
-      const hasBase64 = userImageBase64 ? true : false
-
-      if (!userName || !monthAmount || !userGenre || !userEmail || !userCity) {
-        dispatch({
-          type: Types.ERROR,
-          payload: 'Please, fill in all required fields.',
-        })
-
-        alertErrorMessage('Please, fill in all required fields.')
-        return false
-      } else {
-        await dispatch(Creators.handleLoader(true))
-        const user = firebase.auth().currentUser
-        if (user) {
-          //Get UserPicture
-          const storage = firebase.storage()
-          const storageRef = storage.ref()
-          const imgsRef = storageRef.child('images/users/')
-
-          let userImageURL = ''
-
-          if (hasBase64) {
-            await imgsRef
-              .child(user.uid)
-              .putString(userImageBase64, 'base64', {
-                contentType: 'image/png',
-              })
-              .then(
-                async () =>
-                  await imgsRef
-                    .child(user.uid)
-                    .getDownloadURL()
-                    .then((url) => {
-                      userImageURL = url
-                    })
-              )
-          } else {
-            await imgsRef
-              .child(user.uid)
-              .getDownloadURL()
-              .then((url) => {
-                userImageURL = url
-              })
-          }
-
-          await user
-            .updateEmail(userEmail)
-            .then(async () => {
-              await db
-                .collection('users')
-                .doc('data')
-                .collection('profile')
-                .doc(user.uid)
-                .set({
-                  name: userName,
-                  amount: monthAmount,
-                  city: userCity,
-                  gender: userGenre,
-                })
-
-              dispatch({
-                type: Types.USERINFO,
-                payload: {
-                  userName,
-                  monthAmount,
-                  userCity,
-                  userGenre,
-                  userEmail,
-                  userUid: user.uid,
-                  userImageURL,
-                },
-              })
-
-              await dispatch(Creators.handleLoader(false))
-              return alertSuccessMessage('Your profile has been updated')
-            })
-            .catch((error) => {
-              if (error.code === 'auth/invalid-email')
-                dispatch({
-                  type: Types.ERROR,
-                  payload: 'Invalid email address format.',
-                })
-
-              if (error.code === 'auth/email-already-in-use')
-                dispatch({
-                  type: Types.ERROR,
-                  payload: 'This email is already in use.',
-                })
-            })
-        }
-      }
-    }
-  },
-
   handleUserInfo: () => {
     return async (dispatch) => {
       const user = firebase.auth().currentUser
@@ -336,6 +204,7 @@ export const Creators = {
           .get()
           .then(async (doc) => {
             if (doc.exists) {
+              dispatch(Creators.handleLoader(true))
               const userName = await doc.data().nome
               const businessAddress = await doc.data().enderecoprofissional
 
@@ -345,6 +214,7 @@ export const Creators = {
                   userName,
                   businessAddress,
                   userUid: user.uid,
+                  isLogged: true,
                 },
               })
             } else {
@@ -353,6 +223,7 @@ export const Creators = {
           })
           .then(async () => {
             await dispatch(MarksCreators.getMarks())
+            dispatch(Creators.handleLoader(false))
           })
           .catch(function (error) {
             console.warn('Erro ao solicitar documento:', error)

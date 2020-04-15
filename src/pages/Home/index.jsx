@@ -30,9 +30,10 @@ export default function Home() {
   const history = useHistory()
 
   //Getting redux states
-  const { isLogged } = useSelector(
+  const { isLogged, isLoading } = useSelector(
     (state) => ({
       isLogged: state.auth.isLogged,
+      isLoading: state.auth.isLoading,
     }),
     shallowEqual
   )
@@ -42,6 +43,10 @@ export default function Home() {
       history.push('/')
     }
   }, [isLogged, history])
+
+  if (isLoading) {
+    return <h1>Carregando...</h1>
+  }
 
   return (
     <>

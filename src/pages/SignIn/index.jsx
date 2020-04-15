@@ -86,9 +86,10 @@ export default function SignIn() {
   }
 
   //Getting redux states
-  const { isLogged } = useSelector(
+  const { isLogged, isLoading } = useSelector(
     (state) => ({
       isLogged: state.auth.isLogged,
+      isLoading: state.auth.isLoading,
     }),
     shallowEqual
   )
@@ -98,6 +99,10 @@ export default function SignIn() {
       history.push('/inicio')
     }
   }, [isLogged, history])
+
+  if (isLoading) {
+    return <h1>Carregando...</h1>
+  }
 
   return (
     <Container component='main' maxWidth='xs'>
